@@ -1,0 +1,55 @@
+# Merge the branch or tag that triggered the workflow run into branch "main"
+
+on:
+  workflow_call:
+    secrets:
+      SLACK_BOT_TOKEN:
+        required: true
+      BOT_ACCESS_TOKEN:
+        required: true
+
+jobs:
+  auto_merge:
+    name: Auto-merge into "main"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract info
+        id: getInfo
+        run: |
+          echo ::set-output name=REPO_URL::"https://github.com/${{ github.repository }}"
+          echo ::set-output name=RUN_URL::"https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: 'main'
+          fetch-depth: 0
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
+
+      - name: Checkout cozynergy/github-actions
+        uses: actions/checkout@v2
+        with:
+          repository: cozynergy/github-actions
+          path: github-actions
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
+
+      - name: Git config
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Merge Action"
+
+      - name: Merge into main
+        id: merge
+        run: |
+          git checkout main
+          git merge origin/${{ github.ref_name }} --no-ff -m "Auto-merge ${{ github.ref_name }} into main"
+
+          git push origin main
+
+      - name: Notify
+        if: always()
+        uses: ./github-actions/slack-notify
+        with:
+          text: "<${{ steps.getInfo.outputs.REPO_URL }}|*${{ github.event.repository.name }}*>\nMerge of *${{ github.ref_name }}* into *main*: <${{ steps.getInfo.outputs.RUN_URL }}|*${{ job.status }}*>"
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          status: ${{ job.status }}
