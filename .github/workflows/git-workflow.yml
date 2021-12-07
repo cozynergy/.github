@@ -1,0 +1,51 @@
+# Check our Git workflow
+
+# Default PR activities are `opened`, `synchronize` & `reopened`.
+# We added `edited` to re-run on PR edition (specially on base branch change)
+# https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#pull_request
+
+on:
+  workflow_call:
+
+jobs:
+  git_workflow:
+    name: Check Git workflow
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print informations
+        run: |
+          echo "PR branch: ${{ github.head_ref }}"
+          echo "Base branch: ${{ github.base_ref }}"
+
+      - name: Checks for "stable"
+        if: github.base_ref == 'stable'
+        run: |
+
+          if [[ ${{ github.head_ref }} != release/* && ${{ github.head_ref }} != hotfix/* ]] ; then 
+            echo "Only release/* & hotfix/* can be merged into stable"
+            exit 1
+          fi
+
+      - name: Checks for "release/*"
+        if: startsWith(github.base_ref, 'release/')
+        run: |
+          if [[ ${{ github.head_ref }} != feat/* ]] ; then
+            echo "Only feat/* can be merged into release/*"
+            exit 1
+          fi
+
+      - name: Checks for "main"
+        if: github.base_ref == 'main'
+        run: |
+          echo "No PR on main allowed"
+          exit 1
+
+      - name: Checks for old naming convention
+        if: |
+          startsWith(github.head_ref, 'feat-') || 
+          startsWith(github.head_ref, 'fix-') || 
+          startsWith(github.head_ref, 'hotfix-') ||
+          startsWith(github.head_ref, 'release-')
+        run: |
+          echo "Only feat/*, hotfix/* or release/* will be able to be merged"
+          exit 1
