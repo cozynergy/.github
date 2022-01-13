@@ -50,6 +50,6 @@ jobs:
         if: always()
         uses: ./github-actions/slack-notify
         with:
-          text: "<${{ steps.getInfo.outputs.REPO_URL }}|*${{ github.event.repository.name }}*>\nMerge of *${{ github.ref_name }}* into *main*: <${{ steps.getInfo.outputs.RUN_URL }}|*${{ job.status }}*>"
+          text: "<${{ steps.getInfo.outputs.REPO_URL }}|*${{ github.event.repository.name }}*>\nMerge of `${{ github.ref_name }}` into `main`: <${{ steps.getInfo.outputs.RUN_URL }}|${{ job.status }}>"
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           status: ${{ job.status }}
