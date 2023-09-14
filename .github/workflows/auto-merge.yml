@@ -3,7 +3,7 @@
 on:
   workflow_call:
     secrets:
-      SLACK_BOT_TOKEN:
+      SLACK_WEBHOOK_URL:
         required: true
       BOT_ACCESS_TOKEN:
         required: true
@@ -50,5 +50,5 @@ jobs:
         uses: ./github-actions/slack-notify
         with:
           text: "<${{ steps.getInfo.outputs.REPO_URL }}|*${{ github.event.repository.name }}*>\nMerge of `${{ github.ref_name }}` into `main` - <${{ steps.getInfo.outputs.RUN_URL }}|${{ job.status }}>"
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           status: ${{ job.status }}
