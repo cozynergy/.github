@@ -71,4 +71,4 @@ jobs:
       - run: composer install
       
       - id: run-command
-        run: make ${{ matrix.cmd }
+        run: make ${{ matrix.cmd }}
