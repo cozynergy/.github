@@ -88,7 +88,7 @@ jobs:
   notify-failure:
     if: ${{ always() && needs.deploy.result == 'failure' }}
     needs: deploy
-    uses: ./composite/deploy-notify@main
+    uses: cozynergy/.github/composite/deploy-notify@main
     with:
       status: failure
       environment: ${{ inputs.environment }}
@@ -96,7 +96,7 @@ jobs:
 
   notify-success:
     needs: deploy
-    uses: ./composite/deploy-notify@main
+    uses: cozynergy/.github/composite/deploy-notify@main
     with:
       status: success
       environment: ${{ inputs.environment }}
