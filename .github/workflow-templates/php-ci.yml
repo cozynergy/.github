@@ -1,0 +1,47 @@
+name: Cozynergy PHP CI
+
+on:
+  pull_request:
+    types: 
+      - opened
+      - synchronize
+      - edited
+    branches: [ $default-branch ]
+
+jobs:
+  get-dependencies:
+    uses: .github/composite/php-dependencies.yml@main
+    with:
+      php_mode: php-gcp
+      bot_access_token: ${{ secrets.BOT_ACCESS_TOKEN }}
+
+  quality:
+    uses: .github/worflows/php-quality.yml@main
+    needs: get-dependencies
+    with:
+      php_mode: php-gcp
+
+  build:
+    needs: quality
+    uses: .github/composite/php-build.yml@main
+    with:
+      product: dtvr
+      image_tag: ${{ github.event.pull_request.head.sha }}
+      bot_access_token: ${{ secrets.BOT_ACCESS_TOKEN }}
+      gcp_provider_id: ${{ secrets.GCP_CI_PROVIDER_ID }}
+      gcp_service_account: ${{ secrets.GCP_CI_SERVICE_ACCOUNT_NAME }}
+
+  notify-failure:
+    if: ${{ always() && (needs.build.result == 'failure' || needs.quality.result == 'failure' || needs.get-dependencies.result == 'failure') }}
+    needs: [ build, quality, get-dependencies ]
+    uses: .github/composite/pr-notify.yml@main
+    with:
+      status: failure
+      slack_webhook: ${{ secrets.SLACK_TEST_WEBHOOK_URL }}
+
+  notify-success:
+    needs: [ build, quality, get-dependencies ]
+    uses: .github/composite/pr-notify.yml@main
+    with:
+      status: success
+      slack_webhook: ${{ secrets.SLACK_TEST_WEBHOOK_URL }}

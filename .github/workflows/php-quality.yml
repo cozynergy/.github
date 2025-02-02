@@ -1,0 +1,74 @@
+name: Quality Checks
+
+on:
+  workflow_call:
+    inputs:
+      php_mode:
+        required: false
+        type: string
+        default: 'php'
+        description: "Mode PHP pour les images (php, php-gcp)"
+      tasks:
+        required: false
+        type: string
+        default: '["phpcs", "phpstan", "composer-validate", "lint-symfony", "lint-twig", "lint-yaml", "composer-audit", "symfony-audit", "test-unit", "test-integration"]'
+        description: "Liste des tâches à exécuter en JSON"
+
+jobs:
+  quality:
+    name: Quality & Security check
+    runs-on: cozynergy
+    container:
+      image: ${{ inputs.php_image }}
+      volumes:
+        - ./:/app
+      options: --cpus 1
+    strategy:
+      fail-fast: false
+      matrix:
+        task: ${{ fromJson(inputs.tasks) }}
+        include:
+          - task: phpcs
+            cmd: qa-phpcs
+          - task: phpstan
+            cmd: qa-phpstan
+          - task: composer-validate
+            cmd: qa-composer-validate
+          - task: lint-symfony
+            cmd: qa-lint-symfony-service
+          - task: lint-twig
+            cmd: qa-lint-twig
+          - task: lint-yaml
+            cmd: qa-lint-yaml
+          - task: composer-audit
+            cmd: secu-composer-audit
+          - task: symfony-audit
+            cmd: secu-symfony-audit
+          - task: test-unit
+            cmd: test-unit
+          - task: test-integration
+            cmd: test-integration
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      packages: 'write'
+    env:
+      COMPOSER_ALLOW_SUPERUSER: 1
+      APP_ENV: test
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+      
+      - id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+          
+      - run: composer install
+      
+      - id: run-command
+        run: make ${{ matrix.cmd }

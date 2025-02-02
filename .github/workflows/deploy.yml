@@ -1,0 +1,103 @@
+name: 'Deploy'
+on:
+  workflow_call:
+    inputs:
+      product:
+        required: true
+        type: string
+        description: "Nom du produit"
+      version:
+        required: true
+        type: string
+        description: "Version à déployer (SHA commit ou tag)"
+      environment:
+        required: true
+        type: string
+        description: "Type d'environnement (staging ou prod)"
+      cluster_name:
+        required: true
+        type: string
+        description: "Nom du cluster"
+      cluster_zone:
+        required: true
+        type: string
+        description: "Zone du cluster"
+      cluster_project:
+        required: true
+        type: string
+        description: "Projet du cluster"
+    secrets:
+      gcp_provider_id:
+        required: true
+        description: "ID du provider GCP"
+      gcp_service_account:
+        required: true
+        description: "Nom du compte de service GCP"
+      slack_webhook:
+        required: true
+        description: "URL du webhook Slack"
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: cozynergy
+    container:
+      image: europe-west1-docker.pkg.dev/cozynergy-ci/images/gh:0.0.1-beta-2
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      packages: 'write' 
+    env:
+      VERSION: ${{ inputs.version }}
+      ENV: ${{ inputs.environment }}
+      project_id: cozynergy-ci
+      registry: images
+      region: europe-west1
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          project_id: ${{ env.project_id }}
+          workload_identity_provider: ${{ secrets.gcp_provider_id }}
+          service_account: ${{ secrets.gcp_service_account }}
+          
+      - name: Verify Docker Image Exists
+        id: check-image
+        run: |
+            IMAGE_EXISTS=$(gcloud artifacts docker images list "${{ env.region }}-docker.pkg.dev/${{ env.project_id }}/${{ env.registry }}/${{ inputs.product }}" \
+              --format="value(tags)" \
+              --filter="tags=${{ inputs.version }}" \
+              --include-tags | grep -E "^${{ inputs.version }}$" || true)
+            if [ -z "$IMAGE_EXISTS" ]; then
+              echo "::error::Docker image with tag ${{ inputs.version }} not found in ${{ env.registry }}/${{ inputs.product }}"
+              exit 1
+            fi
+      
+      - name: Authenticate to Cluster
+        id: 'get-cluster-credentials'
+        run: |
+          gcloud container clusters get-credentials ${{ inputs.cluster_name }} --zone ${{ inputs.cluster_zone }} --project ${{ inputs.cluster_project }}
+
+      - name: Build and Apply Kustomize
+        run: |-
+          make k8s-apply
+
+  notify-failure:
+    if: ${{ always() && needs.deploy.result == 'failure' }}
+    needs: deploy
+    uses: ./.github/composite/deploy-notify.yml
+    with:
+      status: failure
+      environment: ${{ inputs.environment }}
+      slack_webhook: ${{ secrets.slack_webhook }}
+
+  notify-success:
+    needs: deploy
+    uses: ./.github/composite/deploy-notify.yml
+    with:
+      status: success
+      environment: ${{ inputs.environment }}
+      slack_webhook: ${{ secrets.slack_webhook }}

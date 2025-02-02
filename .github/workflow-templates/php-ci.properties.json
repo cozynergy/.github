@@ -1,0 +1,12 @@
+{
+    "name": "Cozynergy PHP Workflow",
+    "description": "Cozynergy PHP CI workflow template.",
+    "iconName": "favicon",
+    "categories": [
+        "php"
+    ],
+    "filePatterns": [
+        "composer.json$",
+        "^Dockerfile"
+    ]
+}
