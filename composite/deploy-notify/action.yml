@@ -3,16 +3,14 @@ description: 'Notification Slack pour les déploiement'
 inputs:
   status:
     required: true
-    type: string
     description: "Status de la notification (success/failure)"
   environment:
     required: true
-    type: string
     description: "Environnement du déploiement"
   slack_webhook:
     required: true
     description: "URL du webhook Slack"
-run:
+runs:
   using: "composite"
   steps:
   - uses: slackapi/slack-github-action@v2.0.0

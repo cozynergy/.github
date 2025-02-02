@@ -3,12 +3,11 @@ description: 'Notification Slack pour les Pull Request'
 inputs:
   status:
     required: true
-    type: string
     description: "Status de la notification (success/failure)"
   slack_webhook:
     required: true
     description: "URL du webhook Slack"
-run:
+runs:
   using: "composite"
   steps:
   - uses: slackapi/slack-github-action@v2.0.0

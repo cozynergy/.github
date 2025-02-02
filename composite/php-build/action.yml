@@ -3,11 +3,9 @@ description: Construit et push l'image docker
 inputs:
   product:
     required: true
-    type: string
     description: "Nom du produit"
   image_tag:
     required: true
-    type: string
     description: "Tag de l'image"
   bot_access_token:
     required: true
@@ -19,12 +17,8 @@ inputs:
     required: true
     description: "Nom du compte de service GCP"
 
-run:
+runs:
   using: "composite"
-  env:
-    project_id: cozynergy-ci
-    region: europe-west1
-    registry: images
   steps:
   - uses: docker/setup-buildx-action@v3
     with:
@@ -42,13 +36,13 @@ run:
     uses: google-github-actions/auth@v2
     with:
       token_format: access_token
-      project_id: ${{ env.project_id }}
+      project_id: cozynergy-ci
       workload_identity_provider: ${{ secrets.gcp_provider_id }}
       service_account: ${{ secrets.gcp_service_account }}
       
   - uses: docker/login-action@v3
     with:
-      registry: ${{ env.region }}-docker.pkg.dev
+      registry: europe-west1-docker.pkg.dev
       username: oauth2accesstoken
       password: ${{ steps.auth.outputs.access_token }}
 
@@ -62,4 +56,4 @@ run:
       secrets: |
         authToken=${{ secrets.bot_access_token }}
       tags: |
-        ${{ env.region }}-docker.pkg.dev/${{ env.project_id }}/${{ env.registry }}/${{ inputs.product }}:${{ inputs.image_tag }}
+        europe-west1-docker.pkg.dev/ozynergy-ci/images/${{ inputs.product }}:${{ inputs.image_tag }}

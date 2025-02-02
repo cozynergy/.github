@@ -3,22 +3,18 @@ description: Get php dependencies
 inputs:
   php_mode:
     required: false
-    type: string
     default: 'php'
     description: "Mode PHP pour les images (php, php-gcp)"
   bot_access_token:
     required: true
     description: "Token d'accès GitHub"
 
-run:
+runs:
   using: "composite"
-  env:
-    COMPOSER_ALLOW_SUPERUSER: 1
-    APP_ENV: test
   steps:
   - uses: actions/checkout@v4
   
-  - id: composer-cache
+  - shell: bash
     run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
   
   - uses: actions/cache@v4
@@ -27,13 +23,16 @@ run:
       key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
       restore-keys: ${{ runner.os }}-composer-
   
-  - run: |
-      composer config --global --auth github-oauth.github.com ${{ inputs.bot_access_token }}
+  - shell: bash
+    run: |
+       COMPOSER_ALLOW_SUPERUSER=1 APP_ENV=test composer config --global --auth github-oauth.github.com ${{ inputs.bot_access_token }}
       
-  - run: composer install
+  - shell: bash
+    run: composer install
   
   - uses: symfonycorp/security-checker-action@v5
   
-  - run: |
+  - shell: bash
+    run: |
       php bin/console -V
       php bin/console about
