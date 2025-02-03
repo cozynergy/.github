@@ -16,7 +16,7 @@ on:
         description: "URL du webhook Slack"
 
 jobs:
-  notify:
+  deploy:
     runs-on: cozynergy
     steps:
     - uses: slackapi/slack-github-action@v2.0.0

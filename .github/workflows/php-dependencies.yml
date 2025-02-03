@@ -14,7 +14,7 @@ on:
         description: "Token d'accès GitHub"
 
 jobs:
-  get-dependencies:
+  dependencies:
     name: Get & Cache dependencies
     runs-on: cozynergy
     container:

@@ -38,8 +38,7 @@ on:
         description: "URL du webhook Slack"
 
 jobs:
-  deploy:
-    name: Deploy
+  cluster:
     runs-on: cozynergy
     container:
       image: europe-west1-docker.pkg.dev/cozynergy-ci/images/gh:0.0.1-beta-2
@@ -86,8 +85,8 @@ jobs:
           make k8s-apply
 
   notify-failure:
-    if: ${{ always() && needs.deploy.result == 'failure' }}
-    needs: deploy
+    if: ${{ always() && needs.cluster.result == 'failure' }}
+    needs: cluster
     uses: ./.github/workflows/deploy-notify.yml
     with:
       status: failure
@@ -96,7 +95,7 @@ jobs:
       slack_webhook: ${{ secrets.slack_webhook }}
 
   notify-success:
-    needs: deploy
+    needs: cluster
     uses: ./.github/workflows/deploy-notify.yml
     with:
       status: success

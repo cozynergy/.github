@@ -23,7 +23,7 @@ on:
         description: "URL du webhook Slack"
 
 jobs:
-  deploy:
+  staging:
     uses: ./.github/workflows/deploy.yml
     with:     
       product: ${{ inputs.product }}
