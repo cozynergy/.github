@@ -24,7 +24,7 @@ on:
 
 jobs:
   deploy:
-    uses: ./.github/workflows/deploy.yml@main
+    uses: ./.github/workflows/deploy.yml
     with:     
       product: ${{ inputs.product }}
       version: ${{ inputs.version }}

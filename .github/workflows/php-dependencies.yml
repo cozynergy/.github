@@ -1,0 +1,49 @@
+name: Get Dependencies
+
+on:
+  workflow_call:
+    inputs:
+      php_mode:
+        required: false
+        type: string
+        default: 'php'
+        description: "Mode PHP pour les images (php, php-gcp)"
+    secrets:
+      bot_access_token:
+        required: true
+        description: "Token d'accès GitHub"
+
+jobs:
+  get-dependencies:
+    name: Get & Cache dependencies
+    runs-on: cozynergy
+    container:
+      image: europe-west1-docker.pkg.dev/cozynergy-ci/images/${{ inputs.php_mode }}-builder:0.0.1-rc-2
+      volumes:
+        - ./:/app
+      options: --cpus 1 
+    env:
+      COMPOSER_ALLOW_SUPERUSER: 1
+      APP_ENV: test
+    steps:
+    - uses: actions/checkout@v4
+    
+    - id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+    
+    - uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+    
+    - run: |
+        COMPOSER_ALLOW_SUPERUSER=1 APP_ENV=test composer config --global --auth github-oauth.github.com ${{ secrets.bot_access_token }}
+        
+    - run: composer install
+    
+    - uses: symfonycorp/security-checker-action@v5
+    
+    - run: |
+        php bin/console -V
+        php bin/console about

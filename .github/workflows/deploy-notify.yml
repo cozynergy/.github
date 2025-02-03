@@ -1,0 +1,45 @@
+name: Deployment notifications
+on:
+  workflow_call:
+    inputs:
+      status:
+        required: true
+        type: string
+        description: "Status de la notification (success/failure)"
+      environment: 
+        required: true
+        type: string
+        description: "Environnement sur lequel est effectué le déploiement"
+    secrets:
+      slack_webhook:
+        required: true
+        description: "URL du webhook Slack"
+
+jobs:
+  notify:
+    runs-on: cozynergy
+    steps:
+    - uses: slackapi/slack-github-action@v2.0.0
+      with:
+        webhook: ${{ secrets.slack_webhook }}
+        webhook-type: incoming-webhook
+        payload: |
+          attachments:
+          - color: ${{ inputs.status == 'success' && '#7ed07e' || '#ac3d00' }}
+            blocks:
+            - type: section
+              text:
+                type: mrkdwn
+                text: |-
+                  ${{ inputs.status == 'success' && 'Succès' || 'Erreur' }} du Déploiement du projet <${{ github.server_url }}/${{ github.repository }}|*${{ github.repository }}*> sur ${{inputs.environment}}
+            - type: divider
+            - type: rich_text
+              elements:
+              - type: rich_text_list
+                style: bullet
+                elements:
+                - type: rich_text_section
+                  elements:
+                  - type: link
+                    url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                    text: Github Actions

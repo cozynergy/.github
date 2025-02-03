@@ -88,16 +88,18 @@ jobs:
   notify-failure:
     if: ${{ always() && needs.deploy.result == 'failure' }}
     needs: deploy
-    uses: cozynergy/.github/composite/deploy-notify@main
+    uses: ./.github/workflows/deploy-notify.yml
     with:
       status: failure
       environment: ${{ inputs.environment }}
+    secrets:
       slack_webhook: ${{ secrets.slack_webhook }}
 
   notify-success:
     needs: deploy
-    uses: cozynergy/.github/composite/deploy-notify@main
+    uses: ./.github/workflows/deploy-notify.yml
     with:
       status: success
       environment: ${{ inputs.environment }}
+    secrets:
       slack_webhook: ${{ secrets.slack_webhook }}

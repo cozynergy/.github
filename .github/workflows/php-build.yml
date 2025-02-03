@@ -1,0 +1,70 @@
+name: Build and Push
+
+on:
+  workflow_call:
+    inputs:
+      product:
+        required: true
+        type: string
+        description: "Nom du produit"
+      image_tag:
+        required: true
+        type: string
+        description: "Tag de l'image"
+    secrets:
+      bot_access_token:
+        required: true
+        description: "Token d'accès GitHub"
+      gcp_provider_id:
+        required: true
+        description: "ID du provider GCP"
+      gcp_service_account:
+        required: true
+        description: "Nom du compte de service GCP"
+
+jobs:
+  build:
+    name: Build & Push
+    runs-on: cozynergy
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      packages: 'write'
+    steps:
+    - uses: docker/setup-buildx-action@v3
+      with:
+        driver: kubernetes
+        driver-opts: |
+          requests.cpu=1.8
+          limits.cpu=3
+          requests.memory=2Gi
+          limits.memory=3Gi
+          rootless=true
+          
+    - uses: actions/checkout@v4
+    
+    - id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: access_token
+        project_id: cozynergy-ci
+        workload_identity_provider: ${{ secrets.gcp_provider_id }}
+        service_account: ${{ secrets.gcp_service_account }}
+        
+    - uses: docker/login-action@v3
+      with:
+        registry: europe-west1-docker.pkg.dev
+        username: oauth2accesstoken
+        password: ${{ steps.auth.outputs.access_token }}
+
+    - uses: docker/build-push-action@v6
+      with: 
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        push: true
+        context: ./
+        target: "runner"
+        secrets: |
+          authToken=${{ secrets.bot_access_token }}
+        tags: |
+          europe-west1-docker.pkg.dev/ozynergy-ci/images/${{ inputs.product }}:${{ inputs.image_tag }}
