@@ -67,4 +67,4 @@ jobs:
         secrets: |
           authToken=${{ secrets.bot_access_token }}
         tags: |
-          europe-west1-docker.pkg.dev/ozynergy-ci/images/${{ inputs.product }}:${{ inputs.image_tag }}
+          europe-west1-docker.pkg.dev/cozynergy-ci/images/${{ inputs.product }}:${{ inputs.image_tag }}
