@@ -6,11 +6,17 @@ on:
         required: true
         type: string
         description: "Status de la notification (success/failure)"
+      test:
+        required: false
+        type: string
 
 jobs:
   notify:
     runs-on: cozynergy
     steps:
+    - run: |
+        echo 'HHH ${{secrets.SLACK_TEST_WEBHOOK_URL}} HHH'
+        echo 'III ${{inputs.test}} III'
     - uses: slackapi/slack-github-action@v2.0.0
       with:
         webhook: ${{ secrets.SLACK_TEST_WEBHOOK_URL }}
