@@ -6,18 +6,14 @@ on:
         required: true
         type: string
         description: "Status de la notification (success/failure)"
-    secrets:
-      slack_webhook:
-        required: true
-        description: "URL du webhook Slack"
 
 jobs:
-  pr:
+  notify:
     runs-on: cozynergy
     steps:
     - uses: slackapi/slack-github-action@v2.0.0
       with:
-        webhook: ${{ secrets.slack_webhook }}
+        webhook: ${{ secrets.SLACK_TEST_WEBHOOK_URL }}
         webhook-type: incoming-webhook
         payload: |
           attachments:

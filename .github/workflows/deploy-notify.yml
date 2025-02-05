@@ -10,10 +10,6 @@ on:
         required: true
         type: string
         description: "Environnement sur lequel est effectué le déploiement"
-    secrets:
-      slack_webhook:
-        required: true
-        description: "URL du webhook Slack"
 
 jobs:
   deploy:
@@ -21,7 +17,7 @@ jobs:
     steps:
     - uses: slackapi/slack-github-action@v2.0.0
       with:
-        webhook: ${{ secrets.slack_webhook }}
+        webhook: ${{ secrets.SLACK_TEST_WEBHOOK_URL }}
         webhook-type: incoming-webhook
         payload: |
           attachments:

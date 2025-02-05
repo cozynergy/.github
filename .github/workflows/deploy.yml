@@ -1,4 +1,4 @@
-name: 'Deploy'
+name: Deployement
 on:
   workflow_call:
     inputs:
@@ -33,9 +33,6 @@ on:
       gcp_service_account:
         required: true
         description: "Nom du compte de service GCP"
-      slack_webhook:
-        required: true
-        description: "URL du webhook Slack"
 
 jobs:
   cluster:
@@ -92,7 +89,7 @@ jobs:
       status: failure
       environment: ${{ inputs.environment }}
     secrets:
-      slack_webhook: ${{ secrets.slack_webhook }}
+      inherit
 
   notify-success:
     needs: cluster
@@ -101,4 +98,4 @@ jobs:
       status: success
       environment: ${{ inputs.environment }}
     secrets:
-      slack_webhook: ${{ secrets.slack_webhook }}
+      inherit

@@ -16,7 +16,7 @@ on:
 
 jobs:
   quality:
-    name: Quality & Security check
+    name: Check
     runs-on: cozynergy
     container:
       image: europe-west1-docker.pkg.dev/cozynergy-ci/images/${{ inputs.php_mode }}-builder:0.0.1-rc-2
