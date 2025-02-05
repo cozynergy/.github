@@ -19,7 +19,7 @@ jobs:
         echo 'III ${{inputs.test}} III'
     - uses: slackapi/slack-github-action@v2.0.0
       with:
-        webhook: ${{ secrets.SLACK_TEST_WEBHOOK_URL }}
+        webhook:  https://hooks.slack.com/services/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
         webhook-type: incoming-webhook
         payload: |
           attachments:
