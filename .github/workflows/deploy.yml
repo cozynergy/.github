@@ -43,6 +43,8 @@ jobs:
       contents: 'read'
       id-token: 'write'
       packages: 'write' 
+    outputs:
+      ts: ${{ steps.launch_sequence.outputs.ts}}
     env:
       VERSION: ${{ inputs.version }}
       ENV: ${{ inputs.environment }}
@@ -50,52 +52,92 @@ jobs:
       registry: images
       region: europe-west1
     steps:
-      - uses: actions/checkout@v4
+    - name: Initiate the deployment launch sequence
+      id: launch_sequence
+      uses: slackapi/slack-github-action@v2.0.0
+      with:
+        method: chat.postMessage
+        token: ${{ secrets.SLACK_BOT_TOKEN }}
+        payload: |
+          channel: C6RSHU801
+          text: "☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - Start"
+          attachments:
+            - color: "dbab09"
+              fields:
+                - title: "Status"
+                  short: true
+                  value: "En cours"
 
-      - id: auth
-        uses: google-github-actions/auth@v2
-        with:
-          token_format: access_token
-          project_id: ${{ env.project_id }}
-          workload_identity_provider: ${{ secrets.gcp_provider_id }}
-          service_account: ${{ secrets.gcp_service_account }}
-          
-      - name: Verify Docker Image Exists
-        id: check-image
-        run: |
-            IMAGE_EXISTS=$(gcloud artifacts docker images list "${{ env.region }}-docker.pkg.dev/${{ env.project_id }}/${{ env.registry }}/${{ inputs.product }}" \
-              --format="value(tags)" \
-              --filter="tags=${{ inputs.version }}" \
-              --include-tags | grep -E "^${{ inputs.version }}$" || true)
-            if [ -z "$IMAGE_EXISTS" ]; then
-              echo "::error::Docker image with tag ${{ inputs.version }} not found in ${{ env.registry }}/${{ inputs.product }}"
-              exit 1
-            fi
-      
-      - name: Authenticate to Cluster
-        id: 'get-cluster-credentials'
-        run: |
-          gcloud container clusters get-credentials ${{ inputs.cluster_name }} --zone ${{ inputs.cluster_zone }} --project ${{ inputs.cluster_project }}
+    - uses: actions/checkout@v4
 
-      - name: Build and Apply Kustomize
-        run: |-
-          make k8s-apply
+    - id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        token_format: access_token
+        project_id: ${{ env.project_id }}
+        workload_identity_provider: ${{ secrets.gcp_provider_id }}
+        service_account: ${{ secrets.gcp_service_account }}
+        
+    - name: Verify Docker Image Exists
+      id: check-image
+      run: |
+          IMAGE_EXISTS=$(gcloud artifacts docker images list "${{ env.region }}-docker.pkg.dev/${{ env.project_id }}/${{ env.registry }}/${{ inputs.product }}" \
+            --format="value(tags)" \
+            --filter="tags=${{ inputs.version }}" \
+            --include-tags | grep -E "^${{ inputs.version }}$" || true)
+          if [ -z "$IMAGE_EXISTS" ]; then
+            echo "::error::Docker image with tag ${{ inputs.version }} not found in ${{ env.registry }}/${{ inputs.product }}"
+            exit 1
+          fi
+    
+    - name: Authenticate to Cluster
+      id: 'get-cluster-credentials'
+      run: |
+        gcloud container clusters get-credentials ${{ inputs.cluster_name }} --zone ${{ inputs.cluster_zone }} --project ${{ inputs.cluster_project }}
 
-  notify-failure:
+    - name: Build and Apply Kustomize
+      run: |-
+        make k8s-apply
+
+  notify:
+    runs-on: cozynergy
     if: ${{ always() && needs.cluster.result == 'failure' }}
     needs: cluster
-    uses: ./.github/workflows/deploy-notify.yml
-    with:
-      status: failure
-      environment: ${{ inputs.environment }}
-    secrets:
-      inherit
+    steps:
+    - name: Deploy failed
+      uses: slackapi/slack-github-action@v2.0.0
+      with:
+        method: chat.update
+        token: ${{ secrets.SLACK_BOT_TOKEN }}
+        payload: |
+          channel: C6RSHU801
+          ts: "${{ needs.cluster.outputs.ts }}"
+          text: "☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - Failed"
+          attachments:
+            - color: "ac3d00"
+              fields:
+                - title: "Status"
+                  short: true
+                  value: "Erreur"
 
   notify-success:
     needs: cluster
-    uses: ./.github/workflows/deploy-notify.yml
-    with:
-      status: success
-      environment: ${{ inputs.environment }}
-    secrets:
-      inherit
+    runs-on: cozynergy
+    steps:
+    - name: Deploy failed
+      uses: slackapi/slack-github-action@v2.0.0
+      with:
+        method: chat.update
+        token: ${{ secrets.SLACK_BOT_TOKEN }}
+        payload: |
+          channel: C6RSHU801
+          ts: "${{ needs.cluster.outputs.ts }}"
+          text: "☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - :rocket:"
+          attachments:
+            - color: "7ed07e"
+              fields:
+                - title: "Status"
+                  short: true
+                  value: "Succés"
+
+   
