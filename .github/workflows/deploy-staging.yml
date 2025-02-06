@@ -11,13 +11,6 @@ on:
         required: true
         type: string
         description: "Version à déployer (SHA commit ou Tag)"
-    secrets:
-      gcp_provider_id:
-        required: true
-        description: "ID du provider GCP"
-      gcp_service_account:
-        required: true
-        description: "Nom du compte de service GCP"
 
 jobs:
   staging:
@@ -29,5 +22,4 @@ jobs:
       cluster_name: staging
       cluster_zone: europe-west3-c
       cluster_project: cozynergy-staging
-    secrets:
-      inherit
+    secrets: inherit

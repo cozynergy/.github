@@ -26,17 +26,11 @@ on:
         required: true
         type: string
         description: "Projet du cluster"
-    secrets:
-      gcp_provider_id:
-        required: true
-        description: "ID du provider GCP"
-      gcp_service_account:
-        required: true
-        description: "Nom du compte de service GCP"
 
 jobs:
   cluster:
     runs-on: cozynergy
+    name: deployment
     container:
       image: europe-west1-docker.pkg.dev/cozynergy-ci/images/gh:0.0.1-beta-2
     permissions:
@@ -75,9 +69,9 @@ jobs:
       with:
         token_format: access_token
         project_id: ${{ env.project_id }}
-        workload_identity_provider: ${{ secrets.gcp_provider_id }}
-        service_account: ${{ secrets.gcp_service_account }}
-        
+        workload_identity_provider: ${{ secrets.GCP_CI_PROVIDER_ID }}
+        service_account: ${{ secrets.GCP_CI_SERVICE_ACCOUNT_NAME }}
+
     - name: Verify Docker Image Exists
       id: check-image
       run: |
@@ -99,8 +93,9 @@ jobs:
       run: |-
         make k8s-apply
 
-  notify:
+  notify-error:
     runs-on: cozynergy
+    name: Error
     if: ${{ always() && needs.cluster.result == 'failure' }}
     needs: cluster
     steps:
@@ -122,6 +117,7 @@ jobs:
 
   notify-success:
     needs: cluster
+    name: Success
     runs-on: cozynergy
     steps:
     - name: Deploy failed

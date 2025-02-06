@@ -11,13 +11,6 @@ on:
         required: true
         type: string
         description: "Version à déployer (SHA commit ou Tag)"
-    secrets:
-      gcp_provider_id:
-        required: true
-        description: "ID du provider GCP"
-      gcp_service_account:
-        required: true
-        description: "Nom du compte de service GCP"
 
 jobs:
   prod:
