@@ -18,48 +18,48 @@ jobs:
           errors: true
           payload: |
             channel: C02B0FGFG3X
-            text: " ${{ inputs.status == 'success' && 'Succès' || 'Erreur' }} de CI pour le projet ${{ github.repository }} > ${{ github.event.pull_request.title }} "
+            text: "${{ inputs.status == 'success' && 'Succès' || 'Erreur' }} de CI pour le projet ${{ github.repository }} > ${{ github.event.pull_request.title }}"
             attachments:
-            - color: ${{ inputs.status == 'success' && '#7ed07e' || '#ac3d00' }}
-              blocks:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: |-
-                    ${{ inputs.status == 'success' && 'Succès' || 'Erreur' }} de CI pour le projet <${{ github.server_url }}/${{ github.repository }}|*${{ github.repository }}*>
-                    Pull request <${{ github.event.pull_request.html_url }}|*${{ github.event.pull_request.title }}*>
-              - type: divider
-              - type: rich_text
-                elements:
-                - type: rich_text_list
-                  style: bullet
+              - color: ${{ inputs.status == 'success' && '7ed07e' || 'ac3d00' }}
+                blocks:
+                - type: section
+                  text:
+                    type: mrkdwn
+                    text: |-
+                      ${{ inputs.status == 'success' && 'Succès' || 'Erreur' }} de CI pour le projet <${{ github.server_url }}/${{ github.repository }}|*${{ github.repository }}*>
+                      Pull request <${{ github.event.pull_request.html_url }}|*${{ github.event.pull_request.title }}*>
+                - type: divider
+                - type: rich_text
                   elements:
-                  - type: rich_text_section
+                  - type: rich_text_list
+                    style: bullet
                     elements:
-                    - type: link
-                      url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-                      text: Github Actions
-                - type: rich_text_list
-                  style: bullet
-                  elements:
-                  - type: rich_text_section
-                    elements:       
-                    - type: link
-                      url:  ${{ github.event.pull_request.html_url }}/commits
-                      text: Commits
-                - type: rich_text_list
-                  style: bullet
-                  elements:
-                  - type: rich_text_section
-                    elements:       
-                    - type: link
-                      url:  ${{ github.event.pull_request.html_url }}/checks
-                      text: Checks
-                - type: rich_text_list
-                  style: bullet
-                  elements:
-                  - type: rich_text_section
-                    elements:       
-                    - type: link
-                      url:  ${{ github.event.pull_request.html_url }}/files
-                      text: Fichiers
+                    - type: rich_text_section
+                      elements:
+                      - type: link
+                        url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                        text: Github Actions
+                  - type: rich_text_list
+                    style: bullet
+                    elements:
+                    - type: rich_text_section
+                      elements:       
+                      - type: link
+                        url:  ${{ github.event.pull_request.html_url }}/commits
+                        text: Commits
+                  - type: rich_text_list
+                    style: bullet
+                    elements:
+                    - type: rich_text_section
+                      elements:       
+                      - type: link
+                        url:  ${{ github.event.pull_request.html_url }}/checks
+                        text: Checks
+                  - type: rich_text_list
+                    style: bullet
+                    elements:
+                    - type: rich_text_section
+                      elements:       
+                      - type: link
+                        url:  ${{ github.event.pull_request.html_url }}/files
+                        text: Fichiers
