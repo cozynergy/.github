@@ -11,9 +11,11 @@ jobs:
   notify:
     runs-on: cozynergy
     steps:
-    - uses: slackapi/slack-github-action@v2.0.0
-      with:
-        webhook: ${{secrets.SLACK_TEST_WEBHOOK_URL}}
-        webhook-type: incoming-webhook
-        payload: |
-          text: "Greetings!"
+      - uses: slackapi/slack-github-action@v2.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          errors: true
+          payload: |
+            channel: C02B0FGFG3X
+            text: "Hello from seprate worflow"
