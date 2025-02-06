@@ -18,9 +18,6 @@ on:
       gcp_service_account:
         required: true
         description: "Nom du compte de service GCP"
-      slack_webhook:
-        required: true
-        description: "URL du webhook Slack"
 
 jobs:
   prod:
@@ -32,7 +29,4 @@ jobs:
       cluster_name: prod
       cluster_zone: europe-west3-c
       cluster_project: cozynergy-prod
-    secrets:
-      gcp_provider_id: ${{ secrets.gcp_provider_id }}
-      gcp_service_account: ${{ secrets.gcp_service_account }}
-      slack_webhook: ${{ secrets.slack_webhook }}
+    secrets: inherit
