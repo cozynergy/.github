@@ -18,7 +18,7 @@ jobs:
           errors: true
           payload: |
             channel: C02B0FGFG3X
-            text: "${{ inputs.status == 'success' && 'Succès' || 'Erreur' }} de CI pour le projet ${{ github.repository }} > ${{ github.event.pull_request.title }}"
+            text: "${{ inputs.status == 'success' && ':white_check_mark:' || ':large_red_square:' }} ${{ github.repository }} > ${{ github.event.pull_request.title }}"
             attachments:
               - color: ${{ inputs.status == 'success' && '7ed07e' || 'ac3d00' }}
                 blocks:
@@ -62,4 +62,4 @@ jobs:
                       elements:       
                       - type: link
                         url:  ${{ github.event.pull_request.html_url }}/files
-                        text: Fichiers
+                        text: Files

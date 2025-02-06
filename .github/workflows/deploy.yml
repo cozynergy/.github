@@ -54,7 +54,7 @@ jobs:
         token: ${{ secrets.SLACK_BOT_TOKEN }}
         payload: |
           channel: C6RSHU801
-          text: "☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - Start"
+          text: ":large_yellow_circle: ☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - Start"
           attachments:
             - color: "dbab09"
               fields:
@@ -107,7 +107,7 @@ jobs:
         payload: |
           channel: C6RSHU801
           ts: "${{ needs.cluster.outputs.ts }}"
-          text: "☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - Failed"
+          text: ":red_circle: ☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - Failed"
           attachments:
             - color: "ac3d00"
               fields:
@@ -128,7 +128,7 @@ jobs:
         payload: |
           channel: C6RSHU801
           ts: "${{ needs.cluster.outputs.ts }}"
-          text: "☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - :rocket:"
+          text: ":large_green_circle: ☸️ Déploiement du projet ${{ github.repository }} sur ${{inputs.environment}} - :rocket:"
           attachments:
             - color: "7ed07e"
               fields:
