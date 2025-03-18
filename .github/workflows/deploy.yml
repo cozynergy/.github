@@ -78,7 +78,7 @@ jobs:
           IMAGE_EXISTS=$(gcloud artifacts docker images list "${{ env.region }}-docker.pkg.dev/${{ env.project_id }}/${{ env.registry }}/${{ inputs.product }}" \
             --format="value(tags)" \
             --filter="tags=${{ inputs.version }}" \
-            --include-tags | grep -E "^${{ inputs.version }}$" || true)
+            --include-tags | grep -E "^${{ inputs.version }}(,|$)" || true)
           if [ -z "$IMAGE_EXISTS" ]; then
             echo "::error::Docker image with tag ${{ inputs.version }} not found in ${{ env.registry }}/${{ inputs.product }}"
             exit 1
